@@ -11,6 +11,7 @@ import sys
 from typing import List
 
 import click
+import xmltodict
 
 from turret.core.extenders import Program
 from turret.core.util import interface_subnets
@@ -37,6 +38,21 @@ class Nmap(Program):
                  **kwargs) -> None:
         """Initialize Nmap scanner object."""
         super().__init__(executable, **kwargs)
+
+
+def xml_to_raw_dict(xml_output):
+    """Convert the XML output of a Nmap scan to a raw dictionary."""
+    return xmltodict.parse(xml_output)
+
+
+def xml_to_dict(xml_output):
+    """Convert the XML output of a Nmap scan to a normalized dictionary."""
+    return normalize_dict(xml_to_raw_dict(xml_output))
+
+
+def normalize_dict(raw_dict):
+    """Normalize the raw Nmap output dictionary."""
+    return raw_dict
 
 
 @click.command('nmap', context_settings=dict(
