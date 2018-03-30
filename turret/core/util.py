@@ -3,6 +3,7 @@
 """Utilities for use in Turret."""
 
 import socket
+from collections import OrderedDict
 from ipaddress import IPv4Network, IPv6Network, ip_network
 from typing import Set, Union
 
@@ -34,3 +35,24 @@ def interface_subnets(interface: str) -> Set[Union[IPv4Network, IPv6Network]]:
             #        This cannot be directly parsed by the ipaddress module.
             pass
     return subnets
+
+
+def clean_xml_dict(raw):
+    """Recursivly clean a dict returned by 'xmltodict'.
+
+    The cleaning procedure depends on the type of the input:
+
+    Args:
+        raw: The raw output returned by 'xmltodict.parse()', or a subvalue of
+            such a raw value.
+
+    Returns:
+        The cleaned value of the raw input, following the cleaning procedure.
+
+    """
+    if isinstance(raw, OrderedDict):
+        return {
+            key: raw[key] for key in raw
+        }
+
+    return raw
