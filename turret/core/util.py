@@ -41,6 +41,8 @@ def clean_xml_dict(raw):
     """Recursivly clean a dict returned by 'xmltodict'.
 
     The cleaning procedure depends on the type of the input:
+        OrderedDict: Convert to regular dictionary, strip keys of a possible
+            leading '@' and apply this function to the values.
 
     Args:
         raw: The raw output returned by 'xmltodict.parse()', or a subvalue of
@@ -52,7 +54,8 @@ def clean_xml_dict(raw):
     """
     if isinstance(raw, OrderedDict):
         return {
-            key: raw[key] for key in raw
+            key[1:] if key[0] == '@' else key:
+                clean_xml_dict(raw[key]) for key in raw
         }
 
     return raw
