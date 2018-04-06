@@ -38,13 +38,16 @@ def interface_subnets(interface: str) -> Set[Union[IPv4Network, IPv6Network]]:
 
 
 def clean_xml_dict(raw):
-    """Recursivly clean a dict returned by 'xmltodict'.
+    """Recursivly clean a dict returned by 'xmltodict', creates a deep copy.
 
     The cleaning procedure depends on the type of the input:
         OrderedDict: Convert to regular dictionary, strip keys of a possible
-            leading '@' and apply this function to the values.
+            leading '@' and apply this function to the values. This funcion
+            does assume that all keys are strings.
         string: Try to convert to an integer, float or boolean of possible,
             otherwise return the raw element.
+        list: Apply this function to all the elements and puts them in a new
+            list.
 
     Args:
         raw: The raw output returned by 'xmltodict.parse()', or a subvalue of
@@ -71,10 +74,15 @@ def clean_xml_dict(raw):
         except ValueError:
             pass
 
-    if isinstance(raw, OrderedDict):
+    elif isinstance(raw, OrderedDict):
         return {
             key[1:] if key[0] == '@' else key:
                 clean_xml_dict(raw[key]) for key in raw
         }
+
+    elif isinstance(raw, list):
+        return [
+            clean_xml_dict(x) for x in raw
+        ]
 
     return raw

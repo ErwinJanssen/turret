@@ -56,19 +56,15 @@ def test_nested_ordered_dict():
     }
 
 
-def test_int_string():
+@pytest.mark.parametrize('raw,expected', [
+    ('9876', 9876),
+    ('0543', 543),
+])
+def test_int_string(raw, expected):
     """Expects an integer, not a float."""
-    raw = '9876'
     clean = clean_xml_dict(raw)
-
     assert type(clean) is int
-    assert clean == 9876
-
-    raw = '0543'
-    clean = clean_xml_dict(raw)
-
-    assert type(clean) is int
-    assert clean == 543
+    assert clean == expected
 
 
 @pytest.mark.parametrize('raw,expected', [
@@ -78,7 +74,6 @@ def test_int_string():
 def test_float_string(raw, expected):
     """Expects a float, not an integer."""
     clean = clean_xml_dict(raw)
-
     assert type(clean) is float
     assert clean == expected
 
@@ -106,3 +101,72 @@ def test_normal_string():
     raw = 'False is the start of this string.'
     clean = clean_xml_dict(raw)
     assert raw is clean
+
+
+def test_empty_list():
+    """Expects a *new* empty list."""
+    raw = []
+    clean = clean_xml_dict(raw)
+
+    assert type(clean) is list
+    assert raw is not clean
+
+
+def test_simple_list():
+    """Expects a new list containing the cleaned elements."""
+    raw = [
+        OrderedDict([
+            ('key', 'value'),
+            ('@attr', 'attribute'),
+        ]),
+        'other element',
+        '5',
+    ]
+    clean = clean_xml_dict(raw)
+
+    assert type(clean) is list
+    assert raw is not clean
+    assert clean == [
+        {
+            'key': 'value',
+            'attr': 'attribute',
+        },
+        'other element',
+        5,
+    ]
+
+
+def test_nested():
+    """Expects all nested elements to be cleaned."""
+    raw = [
+        [
+            '5',
+            '6',
+            OrderedDict([
+                ('int', 2),
+            ]),
+        ],
+        OrderedDict([
+            ('list', [
+                'true',
+                'false',
+            ]),
+            ('float', '3.7'),
+        ])
+    ]
+    clean = clean_xml_dict(raw)
+
+    assert clean == [
+        [
+            5,
+            6,
+            {'int': 2},
+        ],
+        {
+            'list': [
+                True,
+                False,
+            ],
+            'float': 3.7,
+        }
+    ]
