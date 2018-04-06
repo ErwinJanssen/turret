@@ -43,6 +43,8 @@ def clean_xml_dict(raw):
     The cleaning procedure depends on the type of the input:
         OrderedDict: Convert to regular dictionary, strip keys of a possible
             leading '@' and apply this function to the values.
+        string: Try to convert to an integer, float or boolean of possible,
+            otherwise return the raw element.
 
     Args:
         raw: The raw output returned by 'xmltodict.parse()', or a subvalue of
@@ -52,6 +54,23 @@ def clean_xml_dict(raw):
         The cleaned value of the raw input, following the cleaning procedure.
 
     """
+    if isinstance(raw, str):
+        if raw.lower() == 'false':
+            return False
+
+        if raw.lower() == 'true':
+            return True
+
+        try:
+            return int(raw)
+        except ValueError:
+            pass
+
+        try:
+            return float(raw)
+        except ValueError:
+            pass
+
     if isinstance(raw, OrderedDict):
         return {
             key[1:] if key[0] == '@' else key:
